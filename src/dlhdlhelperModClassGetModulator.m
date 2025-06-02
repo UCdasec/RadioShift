@@ -115,9 +115,8 @@ if isempty(filterCoeffs)
   filterCoeffs = rcosdesign(0.35, 4, sps);
 end
 % Modulate
-M = [4, 12];
-r = [1, 2];
-syms = apskmod(x, M, r);
+%Original Scheme for APSK Modulation
+syms = dvbsapskmod(x, 16, 's2x');
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
@@ -135,9 +134,7 @@ if isempty(filterCoeffs)
   filterCoeffs = rcosdesign(0.35, 4, sps);
 end
 % Modulate
-M = [4, 12, 16];
-r = [1, 2, 3];
-syms = apskmod(x, M, r);
+syms = dvbsapskmod(x, 32, 's2x');
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
@@ -155,9 +152,7 @@ if isempty(filterCoeffs)
   filterCoeffs = rcosdesign(0.35, 4, sps);
 end
 % Modulate
-M = [4, 12, 20, 28];
-r = [1, 2, 3, 4];
-syms = apskmod(x, M, r);
+syms = dvbsapskmod(x, 64, 's2x');
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
@@ -175,9 +170,7 @@ if isempty(filterCoeffs)
   filterCoeffs = rcosdesign(0.35, 4, sps);
 end
 % Modulate
-M = [4, 12, 20, 36, 56];
-r = [1, 2, 3, 4, 5];
-syms = apskmod(x, M, r);
+syms = dvbsapskmod(x, 128, 's2x');
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
