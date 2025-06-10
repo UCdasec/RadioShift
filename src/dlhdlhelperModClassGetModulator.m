@@ -39,11 +39,11 @@ switch modType
     modulator = @(x)cpfskModulator(x,sps);
   case "PAM4"
     modulator = @(x)pam4Modulator(x,sps);
-  case "B-FM"
+  case "FM"
     modulator = @(x)bfmModulator(x, fs);
-  case "DSB-AM"
+  case "AM-DSB-SC"
     modulator = @(x)dsbamModulator(x, fs);
-  case "SSB-AM"
+  case "AM-SSB-SC"
     modulator = @(x)ssbamModulator(x, fs);
 end
 end

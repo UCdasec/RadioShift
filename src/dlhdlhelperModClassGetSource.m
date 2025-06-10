@@ -34,7 +34,7 @@ switch modType
   case "256QAM"
     M = 256;
     src = @()randi([0 M-1],spf/sps,1);
-  case {"B-FM","DSB-AM","SSB-AM"}
+  case {"FM","AM-DSB-SC","AM-SSB-SC"}
     src = @()getAudio(spf,fs);
 end
 end
