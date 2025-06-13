@@ -12,10 +12,10 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
     tx_delay = 50;
     file_name_root = 'frame';
 
-    if(~endsWith(pwd(), 'RadioShift\src'))
+    if(~endsWith(pwd(), 'RadioShift/src'))
         error("Please Run from Src in Radio Shift");
     end
-
+    
 
     mod_types = categorical(["BPSK", "QPSK", "8PSK", ...
                                 "16QAM","32QAM", "64QAM", "128QAM", "256QAM",...
@@ -52,28 +52,28 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
     end
 
     
-    data_directory_int8 = fullfile(data_directory, "int8");
-    data_directory_float32 = fullfile(data_directory, "float32");
+    % data_directory_int8 = fullfile(data_directory, "int8");
+    % data_directory_float32 = fullfile(data_directory, "float32");
 
-    if(exist(data_directory_int8, 'dir'))
-        rmdir(data_directory_int8, 's');
-    end
-    if(exist(data_directory_float32, 'dir'))
-        rmdir(data_directory_float32, 's')
-    end
+    % if(exist(data_directory_int8, 'dir'))
+    %     rmdir(data_directory_int8, 's');
+    % end
+    % if(exist(data_directory_float32, 'dir'))
+    %     rmdir(data_directory_float32, 's')
+    % end
                         
-    fprintf("Creating sub directory for float 32 at %s\n", string(data_directory_float32));
-    [success,msg,msgID] = mkdir(data_directory_float32);
-    if ~(success)
-        error(msgID,msg)
-    end
+    % fprintf("Creating sub directory for float 32 at %s\n", string(data_directory_float32));
+    % [success,msg,msgID] = mkdir(data_directory_float32);
+    % if ~(success)
+    %     error(msgID,msg)
+    % end
 
-    fprintf("Creating sub directory for int8 at %s\n", string(data_directory_int8));
-    [success,msg,msgID] = mkdir(data_directory_int8);
+    % fprintf("Creating sub directory for int8 at %s\n", string(data_directory_int8));
+    % [success,msg,msgID] = mkdir(data_directory_int8);
     
-    if ~(success)
-        error(msgID,msg)
-    end
+    % if ~(success)
+    %     error(msgID,msg)
+    % end
 
     channel = dlhdlhelperModClassTestChannel(...
         'SampleRate', fs, ...
@@ -88,8 +88,13 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
 
     rng(1235)
     channel_info = info(channel);
-
-
+    total_frame_count = num_mod_types*frames_per_mod_type*length(snr_levels);
+    fprintf("A total of %d frames will be generated...\n",total_frame_count);
+    all_IQ_int8 = cell(total_frame_count, 1);
+    all_IQ_float32 = cell(total_frame_count, 1);
+    all_labels = cell(total_frame_count, 1);
+    all_SNRs = zeros(total_frame_count, 1);
+    files_count_tracker = 1;
     for mod = 1:num_mod_types
         elapsed_time = seconds(toc);
         elapsed_time.Format = 'hh:mm:ss';
@@ -105,8 +110,9 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
         % Digital modulation types use a center frequency of 902 MHz
         channel.CenterFrequency = 902e6;
         end
-        for j = 1:length(snr_levels)
-            for p=1:frames_per_mod_type
+        wb = waitbar(0,sprintf("Generating frames for %s...", label));
+        for j = (1:length(snr_levels))
+            for p=(1:frames_per_mod_type)
                 % Generate random data
                 x = dataSrc();
                 SNR = snr_levels(j);
@@ -126,14 +132,22 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
             
                 % Saving Int 8 Dataset
                 frame_IQ = int8(IQ * int8_scale);
-                file_name = fullfile(data_directory_int8, sprintf("%s%s%04d",file_name_root,mod_types(mod),p+(frames_per_mod_type*(snr_levels(j)/2))));
-                save(file_name, "frame_IQ", "label", "SNR")
+                all_IQ_int8{files_count_tracker} = frame_IQ;
             
                 % Saving Float32 Dataset
                 frame_IQ = single(IQ);
-                file_name = fullfile(data_directory_float32, sprintf("%s%s%04d",file_name_root,mod_types(mod),p+(frames_per_mod_type*(snr_levels(j)/2))));
-                save(file_name, "frame_IQ", "label", "SNR")
+                all_IQ_float32{files_count_tracker} = frame_IQ;
+
+                all_labels{files_count_tracker} = label;
+                all_SNRs(files_count_tracker) = SNR;
+
+                files_count_tracker = files_count_tracker+1;
             end
+            waitbar(j/length(snr_levels));
         end
+        close(wb);
     end
+    file_location = fullfile(data_directory,"MatGenData.mat");
+    save(file_location, "all_IQ_int8", "all_IQ_float32", "all_labels", "all_SNRs", "-v7.3");
+    fprintf("Saved the generated data at location %s", file_location);
 end
