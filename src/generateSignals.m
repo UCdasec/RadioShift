@@ -16,11 +16,15 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
         error("Please Run from Src in Radio Shift");
     end
     
+    mod_classes = { "OOK", "4ASK", "8ASK", "BPSK", "QPSK", "8PSK", "16PSK", "32PSK", ...
+                    "16APSK", "32APSK", "64APSK", "128APSK", "16QAM", "32QAM", "64QAM", ...
+                    "128QAM", "256QAM", "AM-SSB-WC", "AM-SSB-SC", "AM-DSB-WC", "AM-DSB-SC", ...
+                    "FM", "GMSK", "OQPSK", "BFSK", "4FSK", "8FSK" };
 
     mod_types = categorical(["BPSK", "QPSK", "8PSK", ...
                                 "16QAM","32QAM", "64QAM", "128QAM", "256QAM",...
                                 "16APSK", "32APSK", "64APSK", "128APSK",...
-                                "GFSK", "CPFSK", "FM", "AM-DSB-SC", "AM-SSB-SC"]);
+                                 "FM", "AM-DSB-SC", "AM-SSB-SC"]); 
                         
     num_mod_types = length(mod_types);
 
@@ -52,28 +56,6 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
     end
 
     
-    % data_directory_int8 = fullfile(data_directory, "int8");
-    % data_directory_float32 = fullfile(data_directory, "float32");
-
-    % if(exist(data_directory_int8, 'dir'))
-    %     rmdir(data_directory_int8, 's');
-    % end
-    % if(exist(data_directory_float32, 'dir'))
-    %     rmdir(data_directory_float32, 's')
-    % end
-                        
-    % fprintf("Creating sub directory for float 32 at %s\n", string(data_directory_float32));
-    % [success,msg,msgID] = mkdir(data_directory_float32);
-    % if ~(success)
-    %     error(msgID,msg)
-    % end
-
-    % fprintf("Creating sub directory for int8 at %s\n", string(data_directory_int8));
-    % [success,msg,msgID] = mkdir(data_directory_int8);
-    
-    % if ~(success)
-    %     error(msgID,msg)
-    % end
 
     channel = dlhdlhelperModClassTestChannel(...
         'SampleRate', fs, ...
@@ -100,7 +82,17 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
         elapsed_time.Format = 'hh:mm:ss';
         fprintf('%s - Generating %s frames\n', ...
         elapsed_time, mod_types(mod))
-        label = mod_types(mod);
+
+        label = string(mod_types(mod));
+        match_idx = find(strcmp(string(mod_classes), label), 1);
+        if isempty(match_idx)
+            label_idx = -1; 
+        else
+            label_idx = match_idx - 1;  % Zero-based index to match Python
+        end
+        
+        disp(['Modulation: ', label, ' → Label Index: ', num2str(label_idx)]);
+
         dataSrc = dlhdlhelperModClassGetSource(mod_types(mod), sps, 2*spf, fs);
         modulator = dlhdlhelperModClassGetModulator(mod_types(mod), sps, fs);
         if contains(char(mod_types(mod)), {'FM','AM-DSB-SC','AM-SSB-SC'})
@@ -127,7 +119,6 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
                 frame = dlhdlhelperModClassFrameGenerator(rx_samples, spf, spf, tx_delay, sps);
                 
                 % Save data file
-                label = char(label);
                 IQ = [real(frame),imag(frame)];
             
                 % Saving Int 8 Dataset
@@ -138,7 +129,8 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
                 frame_IQ = single(IQ);
                 all_IQ_float32{files_count_tracker} = frame_IQ;
 
-                all_labels{files_count_tracker} = label;
+                all_labels{files_count_tracker} = label_idx; 
+
                 all_SNRs(files_count_tracker) = SNR;
 
                 files_count_tracker = files_count_tracker+1;
@@ -149,5 +141,5 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
     end
     file_location = fullfile(data_directory,"MatGenData.mat");
     save(file_location, "all_IQ_int8", "all_IQ_float32", "all_labels", "all_SNRs", "-v7.3");
-    fprintf("Saved the generated data at location %s", file_location);
+    fprintf("Saved the generated data at location %s\n", file_location);
 end
