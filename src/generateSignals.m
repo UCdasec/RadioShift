@@ -16,10 +16,6 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
         error("Please Run from Src in Radio Shift");
     end
     
-    mod_classes = { "OOK", "4ASK", "8ASK", "BPSK", "QPSK", "8PSK", "16PSK", "32PSK", ...
-                    "16APSK", "32APSK", "64APSK", "128APSK", "16QAM", "32QAM", "64QAM", ...
-                    "128QAM", "256QAM", "AM-SSB-WC", "AM-SSB-SC", "AM-DSB-WC", "AM-DSB-SC", ...
-                    "FM", "GMSK", "OQPSK", "BFSK", "4FSK", "8FSK" };
 
     mod_types = categorical(["BPSK", "QPSK", "8PSK", ...
                                 "16QAM","32QAM", "64QAM", "128QAM", "256QAM",...
@@ -84,12 +80,13 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
         elapsed_time, mod_types(mod))
 
         label = string(mod_types(mod));
-        match_idx = find(strcmp(string(mod_classes), label), 1);
-        if isempty(match_idx)
-            label_idx = -1; 
-        else
-            label_idx = match_idx - 1;  % Zero-based index to match Python
-        end
+        label_idx = mod-1;
+        % match_idx = find(strcmp(string(mod_types), label), 1);
+        % if isempty(match_idx)
+        %     label_idx = -1; 
+        % else
+        %     label_idx = match_idx - 1;  % Zero-based index to match Python
+        % end
         
         disp(['Modulation: ', label, ' → Label Index: ', num2str(label_idx)]);
 
