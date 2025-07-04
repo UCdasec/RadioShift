@@ -68,11 +68,17 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
     channel_info = info(channel);
     total_frame_count = num_mod_types*frames_per_mod_type*length(snr_levels);
     fprintf("A total of %d frames will be generated...\n",total_frame_count);
-    all_IQ_int8 = cell(total_frame_count, 1);
-    all_IQ_float32 = cell(total_frame_count, 1);
-    all_labels = cell(total_frame_count, 1);
-    all_SNRs = zeros(total_frame_count, 1);
+    % all_IQ_int8 = cell(total_frame_count, 1);
+    % all_IQ_float32 = cell(total_frame_count, 1);
+    % all_labels = cell(total_frame_count, 1);
+    all_IQ_int8 = zeros(spf, 2, total_frame_count, 'int8');
+    all_IQ_float32 = zeros(spf, 2, total_frame_count, 'single');
+    % all_labels = zeros(total_frame_count, 1, 'int8');
+    all_labels = zeros(1, total_frame_count, 'int64');
+    % all_SNRs = zeros(total_frame_count, 1, 'int8');
+    all_SNRs = zeros(1, total_frame_count, 'int64');
     files_count_tracker = 1;
+    tic;
     for mod = 1:num_mod_types
         elapsed_time = seconds(toc);
         elapsed_time.Format = 'hh:mm:ss';
@@ -117,16 +123,19 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
                 
                 % Save data file
                 IQ = [real(frame),imag(frame)];
-            
+                
                 % Saving Int 8 Dataset
-                frame_IQ = int8(IQ * int8_scale);
-                all_IQ_int8{files_count_tracker} = frame_IQ;
+                frame_IQ = (IQ * int8_scale);
+                % all_IQ_int8{files_count_tracker} = frame_IQ;
+                all_IQ_int8(:,:,files_count_tracker) = frame_IQ;
             
                 % Saving Float32 Dataset
-                frame_IQ = single(IQ);
-                all_IQ_float32{files_count_tracker} = frame_IQ;
+                frame_IQ = (IQ);
+                % all_IQ_float32{files_count_tracker} = frame_IQ;
+                all_IQ_float32(:,:,files_count_tracker) = frame_IQ;
 
-                all_labels{files_count_tracker} = label_idx; 
+                % all_labels{files_count_tracker} = label_idx; 
+                all_labels(files_count_tracker) = label_idx;
 
                 all_SNRs(files_count_tracker) = SNR;
 
@@ -136,6 +145,8 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
         end
         close(wb);
     end
+    all_IQ_int8 = permute(all_IQ_int8, [2, 1, 3]); % Convert to (frames, spf, 2)
+    all_IQ_float32 = permute(all_IQ_float32, [2, 1, 3]); % Convert to (frames, spf, 2
     file_location = fullfile(data_directory,"MatGenData.mat");
     save(file_location, "all_IQ_int8", "all_IQ_float32", "all_labels", "all_SNRs", "-v7.3");
     fprintf("Saved the generated data at location %s\n", file_location);
