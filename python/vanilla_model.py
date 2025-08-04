@@ -24,8 +24,15 @@ from torch.optim.optimizer import Optimizer
 console = Console()
 app = App()
 
-mat_path = "/home/anagh/Documents/ModClassDataFiles/MatGenData.mat"
+# MATLAB Generated Dataset 0 PPM
+# mat_path = "/home/anagh/Documents/Datasets/0_PPM_OFFSET/MatGenData.h5"
+
+# # MATLAB Generated Dataset Random PPM
+mat_path = "/home/anagh/Documents/Datasets/Random_PPM_20/MatGenData.h5"
+
+# RadioML Dataset
 radioml_path = "/home/anagh/Documents/RADIOML_2021_07_INT8/RADIOML_2021_07_INT8.hdf5"
+
 
 def train(model, train_loader:DataLoader, optimizer, criterion):
     """
@@ -86,7 +93,7 @@ def test(model, test_loader, is_val:bool ):
 
 
 class VGG(nn.Module):
-    def __init__(self, filters_conv, filters_dense):
+    def __init__(self, filters_conv, filters_dense, num_classes = 27):
         super(VGG, self).__init__()
 
         self.conv1 = nn.Conv1d(2, filters_conv, 3, padding=1)
@@ -134,7 +141,7 @@ class VGG(nn.Module):
         self.fc_bn2 = nn.BatchNorm1d(filters_dense)
         self.fc_relu2 = nn.ReLU()
 
-        self.fc3 = nn.Linear(filters_dense, 27, bias=True)
+        self.fc3 = nn.Linear(filters_dense, num_classes, bias=True)
 
     def forward(self, x):
         x = self.pool1(self.relu1(self.bn1(self.conv1(x))))
@@ -173,9 +180,9 @@ def run_test(weights: Path, MatGenData:bool = False, fp_data = False, batch_size
     # load data and create loaders
     dataset = radioml_21_dataset(dataset, MatGenData, fp_data = fp_data, snr_lb=snr_lb)
     data_loader_test = DataLoader(dataset, batch_size=batch_size, sampler=dataset.test_sampler)
-
+    num_classes = dataset.num_classes
     # Define the model on load
-    model = VGG(64, 128)
+    model = VGG(64, 128, num_classes)
     model.load_state_dict(torch.load(weights, weights_only=True))
     model.to('cuda')
 
@@ -196,32 +203,7 @@ def train_and_test(base:Path, MatGenData:bool = False, fp_data = False):
     np.random.seed(0)
     
     # Mode land info
-    model = VGG(64,128)
-    print(torchinfo.summary(model,input_size=(1,2,1024)))
-
-    if not base.is_dir():
-        if base.is_file():
-            raise Exception
-        base.mkdir(parents=True)
-
-    chpt_path=base.joinpath("ptorch.pth") 
-    print(f'Model weights will be saved in {chpt_path}')
-
-    # TRAIN FRESH
-    retrain = True
-    # HYPER PARAMETERS:
-    batch_size = 1024
-    num_epochs = 50
-
-    #TODO:Test with different optimizers
-    criterion = nn.CrossEntropyLoss()
-
-    lr = 0.01
-    alpha=1e-4
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-     
-    #TODO: Evalutate impact of this 
-    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=1)
+    
     if (MatGenData):
         dataset_path = Path(mat_path)
         snr_lb = 0
@@ -234,11 +216,43 @@ def train_and_test(base:Path, MatGenData:bool = False, fp_data = False):
         raise Exception("Datapath not found")
 
     # load data and create loaders
+    print(f"Using Dataset: {dataset_path}")
     print(f"MatGenData is {MatGenData}")
     dataset = radioml_21_dataset(dataset_path, MatGenData, fp_data = fp_data, snr_lb=snr_lb)
+    num_classes = dataset.num_classes
+    # TRAIN FRESH
+    retrain = True
+    # HYPER PARAMETERS:
+    batch_size = 1024
+    num_epochs = 50
+
+
     data_loader_train = DataLoader(dataset, batch_size=batch_size, sampler=dataset.train_sampler)
     data_loader_val = DataLoader(dataset, batch_size=batch_size, sampler=dataset.val_sampler)
     data_loader_test = DataLoader(dataset, batch_size=batch_size, sampler=dataset.test_sampler)
+
+    model = VGG(64,128, num_classes)
+    print(torchinfo.summary(model,input_size=(1,2,1024)))
+
+    if not base.is_dir():
+        if base.is_file():
+            raise Exception
+        base.mkdir(parents=True)
+
+    chpt_path=base.joinpath("ptorch.pth") 
+    print(f'Model weights will be saved in {chpt_path}')
+
+
+    #TODO:Test with different optimizers
+    criterion = nn.CrossEntropyLoss()
+
+    lr = 0.01
+    alpha=1e-4
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+     
+    #TODO: Evalutate impact of this 
+    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=1)
+
        
     #if gpu is not None:
     model = model.to('cuda')

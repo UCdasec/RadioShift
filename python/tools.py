@@ -19,22 +19,12 @@ from torch.optim.optimizer import Optimizer
 
 
 class radioml_21_dataset(Dataset):
-    def __init__(self, dataset_path, matgen_data, frames_per_mod = 4096, snr_lb = 0., snr_ub = 30., fp_data = False):
+    def __init__(self, dataset_path, matgen_data, frames_per_mod = 4096, snr_lb = -20., snr_ub = 30., fp_data = False):
         super(radioml_21_dataset, self).__init__()
         h5_file = h5py.File(dataset_path,'r')
         if(matgen_data): #If training using the matlab generated data
-            if(fp_data): #If training using the 32bit floating point data                
-                data = h5_file['all_IQ_float32'][0,:]
-                print("Extracting Float32 Matlab Generated Data....")
-            else:        #By default training using the INT8 data
-                data = h5_file['all_IQ_int8'][0,:]
-                print("Extracting INT8 Matlab Generated Data....")
-            
-            self.data = np.array([np.array(h5_file[obj_ref][:]).T for obj_ref in data]) # Needs to be in shape: (# of Frames, 1024, 2)
-            self.snr = (h5_file['all_SNRs'][0,:]).astype(int) #Needs to be saved like this: array([-20, -20, -20, ...,  30,  30,  30])
-            labels = h5_file['all_labels'][0,:]# Needs to be saved like this: array([ 0,  0,  0, ..., 26, 26, 26])
-            self.mod = np.array([int(h5_file[lab][0][0]) for lab in labels])
-            self.len = self.data.shape[0]
+            snr_key = 'all_SNRs'
+            self.mod = h5_file['all_labels'][:,0]
             self.mod_classes = ["BPSK", 
                     "QPSK", 
                     "8PSK",
@@ -50,13 +40,27 @@ class radioml_21_dataset(Dataset):
                     "FM", 
                     "AM-DSB-SC", 
                     "AM-SSB-SC"]
+            if(fp_data): #If training using the 32bit floating point data
+                data_key = 'all_IQ_float32'              
+                # self.data = h5_file['all_IQ_float32']
+                print("Extracting Float32 Matlab Generated Data....")
+            else:        #By default training using the INT8 data
+                data_key = 'all_IQ_int8'
+                # self.data = h5_file['all_IQ_int8']
+                print("Extracting INT8 Matlab Generated Data....")
+            
+            # self.data = np.array([np.array(h5_file[obj_ref][:]).T for obj_ref in data]) # Needs to be in shape: (# of Frames, 1024, 2)
+            # self.snr = (h5_file['all_SNRs'][0,:]).astype(int) #Needs to be saved like this: array([-20, -20, -20, ...,  30,  30,  30])
+            # labels = h5_file['all_labels'][0,:]# Needs to be saved like this: array([ 0,  0,  0, ..., 26, 26, 26])
+            # self.len = self.data.shape[0]
+            
             
         else:
+            data_key = 'X'
+            snr_key = 'Z'
             print("Extracting RadioML Generated Data....")
-            self.data = h5_file['X']
+            # self.data = h5_file['X']
             self.mod = np.argmax(h5_file['Y'], axis=1) # comes in one-hot encoding
-            self.snr = h5_file['Z'][:,0]
-            self.len = self.data.shape[0]
             self.mod_classes = [
                     "OOK",
                     "4ASK",
@@ -86,7 +90,10 @@ class radioml_21_dataset(Dataset):
                     "4FSK",
                     "8FSK",
                 ]
-
+        
+        self.data = h5_file[data_key]
+        self.snr = h5_file[snr_key][:,0]
+        self.len = self.data.shape[0]
         self.num_classes=len(self.mod_classes)
         self.snr_classes = np.arange(snr_lb, snr_ub+2, 2) # -20dB to 30dB, with step of 2 --> 26 snrs
         self.num_snr = len(self.snr_classes)
@@ -107,13 +114,13 @@ class radioml_21_dataset(Dataset):
                 #                                                           then the middle being 26 SNRs,
                 #                                                           then inner most being 4096 samples
                 # Basically [0[0[0...4095] ...25]...26] with a length of 2875392
-                start_idx = self.num_snr*4096*mod + 4096*snr_idx 
-                indices_subclass = list(range(start_idx, start_idx+4096))
+                start_idx = self.num_snr*frames_per_mod*mod + frames_per_mod*snr_idx 
+                indices_subclass = list(range(start_idx, start_idx+frames_per_mod))
                 
                 # 90%/10% training/test split, applied evenly for each mod-SNR pair
                 # 80 10 10 split 
-                split = int(np.ceil(0.8 * 4096)) 
-                split2 = int(np.ceil(0.9 * 4096)) 
+                split = int(np.ceil(0.8 * frames_per_mod)) 
+                split2 = int(np.ceil(0.9 * frames_per_mod)) 
 
                 np.random.shuffle(indices_subclass)
                 train_indices_subclass = indices_subclass[:split]
