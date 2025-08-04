@@ -153,7 +153,7 @@ classdef dlhdlhelperModClassTestChannel < matlab.System
         'AveragePathGains', obj.AveragePathGains, ...
         'KFactor', obj.KFactor, ...
         'MaximumDopplerShift', obj.MaximumDopplerShift);
-      obj.FrequencyShifter = comm.PhaseFrequencyOffset(...
+        obj.FrequencyShifter = comm.PhaseFrequencyOffset(...
         'SampleRate', obj.SampleRate);
     end
 
@@ -197,9 +197,12 @@ classdef dlhdlhelperModClassTestChannel < matlab.System
       % Determine clock offset factor
       if(isequal(obj.HardSetOffsetPPM,1)) % if use hardset value
         clockOffset = obj.MaximumClockOffset;
+        disp(['Hardset Clock Offset (PPM): ', num2str(clockOffset)]);
       else
         maxOffset = obj.MaximumClockOffset;
-        clockOffset = (rand() * 2*maxOffset) - maxOffset;
+        clockOffset = single(rand() * (maxOffset - 1)) + 1;
+        % disp(['Max Clock Offset (PPM): ', num2str(maxOffset)]);
+        disp(['Random Clock Offset (PPM): ', num2str(clockOffset)]);
       end
 
       obj.C = 1 + clockOffset / 1e6;

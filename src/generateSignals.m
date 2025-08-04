@@ -1,10 +1,33 @@
-function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Parameters (* = Required): *frames_per_mod_type, *MAX_PPM, *Path, SPF, SPS, HardSetPPM, freq_scale_factor ) 
-    % Creating Degault values for parameters: spf, sps, hardsetppm, str_sq
-    spf = 1024;
-    sps = 8;
-    set_ppm_offset = 1; 
-    freq_scale_factor  = 1;    %% freq_scale_factor  = 1:  Increase Clock Frequency (Squeeze) ... freq_scale_factor  = -1: Decrease Clock Frequency (Stretch)
-    
+function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, FolderName, varargin) 
+    %Parameters (* = Required): *frames_per_mod_type, *MAX_PPM, *Path, hard_set_offset, freq_scale_factor, SPF, SPS ) 
+    % Creating Default values for parameters: spf, sps, hardsetppm, str_sq
+        % Default values
+    defaultSetPPMOffset = 1;
+    defaultFreqScaleFactor = 1;
+    defaultSPF = 1024;
+    defaultSPS = 8;
+
+    % Input parser setup
+    p = inputParser;
+    addRequired(p, 'frames_per_mod_type');
+    addRequired(p, 'MAX_PPM');
+    addRequired(p, 'Path');
+    addRequired(p, 'FolderName');
+    addParameter(p, 'hard_set_offset', defaultSetPPMOffset, @isnumeric);
+    addParameter(p, 'freq_scale_factor', defaultFreqScaleFactor, @isnumeric);
+    addParameter(p, 'spf', defaultSPF, @isnumeric);
+    addParameter(p, 'sps', defaultSPS, @isnumeric);
+
+    % Parse inputs
+    parse(p, frames_per_mod_type, MAX_PPM, Path, FolderName, varargin{:});
+
+    % Assign parsed variables
+    hard_set_offset = p.Results.hard_set_offset;
+    freq_scale_factor = p.Results.freq_scale_factor;
+    spf = p.Results.spf;
+    sps = p.Results.sps;
+
+
     fs = 200e3;             % Sample rate
     fc = [902e6 100e6];     % Center frequencies
     snr_levels = (0:2:30);
@@ -24,21 +47,11 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
                         
     num_mod_types = length(mod_types);
 
-    defaults = {spf, sps, set_ppm_offset, freq_scale_factor };
 
-    num_of_defaults = length(varargin);
-    if(num_of_defaults > 0 )
-        for i = 1:num_of_defaults
-            defaults{i} = varargin{i};
-        end
-    end
 
-    set_ppm = (freq_scale_factor  * MAX_PPM)/1e6';
-    
-    data_directory = fullfile(Path,"ModClassDataFiles");
-
+    set_ppm = (freq_scale_factor * MAX_PPM); % Convert to PPM
+    data_directory = fullfile(Path, FolderName);
     fprintf("Data file directory is %s \n", string(data_directory));
-
     % Check if data files exist
 
     if exist(data_directory,'dir')
@@ -61,21 +74,20 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
         'KFactor', 4, ...
         'MaximumDopplerShift', 4, ...
         'MaximumClockOffset', set_ppm, ... %Set this as max PPM
-        'HardSetOffsetPPM', set_ppm_offset,... % If this is set as 1, we hardset the Max PPM, otherwise we use a random PPM
+        'HardSetOffsetPPM', hard_set_offset,... % If this is set as 1, we hardset the Max PPM, otherwise we use a random PPM
         'CenterFrequency', fc(1));
 
+    disp(['Hardset PPM Offset: ', num2str(hard_set_offset)]);
+    disp(['Maximum Clock Offset (PPM): ', num2str(set_ppm)]);
+    
     rng(1235)
     channel_info = info(channel);
     total_frame_count = num_mod_types*frames_per_mod_type*length(snr_levels);
     fprintf("A total of %d frames will be generated...\n",total_frame_count);
-    % all_IQ_int8 = cell(total_frame_count, 1);
-    % all_IQ_float32 = cell(total_frame_count, 1);
-    % all_labels = cell(total_frame_count, 1);
+
     all_IQ_int8 = zeros(spf, 2, total_frame_count, 'int8');
     all_IQ_float32 = zeros(spf, 2, total_frame_count, 'single');
-    % all_labels = zeros(total_frame_count, 1, 'int8');
     all_labels = zeros(1, total_frame_count, 'int64');
-    % all_SNRs = zeros(total_frame_count, 1, 'int8');
     all_SNRs = zeros(1, total_frame_count, 'int64');
     files_count_tracker = 1;
     tic;
@@ -87,12 +99,6 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
 
         label = string(mod_types(mod));
         label_idx = mod-1;
-        % match_idx = find(strcmp(string(mod_types), label), 1);
-        % if isempty(match_idx)
-        %     label_idx = -1; 
-        % else
-        %     label_idx = match_idx - 1;  % Zero-based index to match Python
-        % end
         
         disp(['Modulation: ', label, ' → Label Index: ', num2str(label_idx)]);
 
@@ -147,7 +153,33 @@ function [] = generateSignals(frames_per_mod_type, MAX_PPM, Path, varargin) %Par
     end
     all_IQ_int8 = permute(all_IQ_int8, [2, 1, 3]); % Convert to (frames, spf, 2)
     all_IQ_float32 = permute(all_IQ_float32, [2, 1, 3]); % Convert to (frames, spf, 2
-    file_location = fullfile(data_directory,"MatGenData.mat");
-    save(file_location, "all_IQ_int8", "all_IQ_float32", "all_labels", "all_SNRs", "-v7.3");
-    fprintf("Saved the generated data at location %s\n", file_location);
+    
+    % file_location = fullfile(data_directory,"MatGenData.mat");
+    % save(file_location, "all_IQ_int8", "all_IQ_float32", "all_labels", "all_SNRs", "-v7.3");
+    % fprintf("Saved the generated data at location %s\n", file_location);
+    file_location = fullfile(data_directory,"MatGenData.h5");
+    if isfile(file_location)
+        delete(file_location);
+    end
+
+    h5create(file_location, '/all_IQ_int8', [2, spf, total_frame_count],...
+    'Datatype', 'int8');
+    h5write(file_location, '/all_IQ_int8', all_IQ_int8);
+    disp("Saving Int8 Dataset");
+
+    h5create(file_location, '/all_IQ_float32', [2, spf, total_frame_count],...
+    'Datatype', 'single');
+    h5write(file_location, '/all_IQ_float32', all_IQ_float32);
+    disp("Saving Float32 Dataset");
+
+    h5create(file_location, '/all_labels', [1, total_frame_count],...
+     'Datatype', 'int64');
+    h5write(file_location, '/all_labels', all_labels);
+    disp("Saving Labels Dataset");
+
+    h5create(file_location, '/all_SNRs', [1, total_frame_count],...
+     'Datatype', 'int64');
+    h5write(file_location, '/all_SNRs', all_SNRs);
+    disp("Saving SNRs Dataset");
+
 end
