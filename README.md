@@ -13,6 +13,6 @@ https://ceas.mediaspace.kaltura.com/media/Tutorial_RF_Data_Generation/1_yl3mvlne
 
 ## Example Dataset 
 
-The dataset below is an example of simulated RF dataset that we generated using this tutorial (15 modulations, SNR 0dB to 30dB, 1024 samples per I/Q frames).  
+The dataset below is an example of simulated RF dataset that we generated using this tutorial (15 modulations, SNR 0dB to 30dB, 1024 samples per I/Q frames, 0 ppm).  
 
 https://mailuc-my.sharepoint.com/:f:/g/personal/wang2ba_ucmail_uc_edu/EvKqiU3it-dCpseB6lj337kBe3d7YQBRPhXNVgiJkwiDQw?e=zOqzue
