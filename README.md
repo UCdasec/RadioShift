@@ -5,11 +5,15 @@ https://www.mathworks.com/help/releases/R2022b/deep-learning-hdl/ug/modulation-c
 
 The folder consists of a Matlab Live file, ModClassification_ShiftSignalGeneration.mlx, along with helper files used throughout the program. The first half of this Matlab Live serves as a step by step demonstration on how new modulation schemes were introduced and provides visualizations in the form of IQ Constellation and Time Series Plots. The second half of this file provides the steps for generating signal traces with specified parameters for all 18 modulation schemes. Not only can users genereate seven new digital modulation schemes, but sampling error offsets can be carefully manipulated to simulated real-world wireless communication impairements.
 
-## Tutorial 
+## Tutorial Video and Document
 
-The tutorial video regarding how to use our code to generate simulated RF data can be found below 
+We create a tutorial video regarding how to use our code to generate simulated RF data. The link is below  
 
 https://ceas.mediaspace.kaltura.com/media/Tutorial_RF_Data_Generation/1_yl3mvlne 
+
+We also provide a tutorial document (ready only) as well. The link is below  
+
+https://www.overleaf.com/read/qgkzqgmshhbc#56783d 
 
 ## Example Dataset 
 
