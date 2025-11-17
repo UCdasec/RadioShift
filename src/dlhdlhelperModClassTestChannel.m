@@ -129,6 +129,11 @@ classdef dlhdlhelperModClassTestChannel < matlab.System
     %   the Offset, with respect to the range provided. Otherwise, the
     %   OffsetPPM is hardset using the provided MaximumClockOffset
     %   The default is 0.
+
+    ChannelType = 0
+    %   Specify the type of channel to be used. 0 = Rician Fading
+    %   1 = Rayleigh Fading
+    %   The default is 0.
   end
 
   properties(Access = private)
@@ -147,13 +152,24 @@ classdef dlhdlhelperModClassTestChannel < matlab.System
   
   methods(Access = protected)
     function setupImpl(obj)
-      obj.MultipathChannel = comm.RicianChannel(...
-        'SampleRate', obj.SampleRate, ...
-        'PathDelays', obj.PathDelays, ...
-        'AveragePathGains', obj.AveragePathGains, ...
-        'KFactor', obj.KFactor, ...
-        'MaximumDopplerShift', obj.MaximumDopplerShift);
-        obj.FrequencyShifter = comm.PhaseFrequencyOffset(...
+      
+      if (obj.ChannelType == 0)
+        obj.MultipathChannel = comm.RicianChannel(...
+          'SampleRate', obj.SampleRate, ...
+          'PathDelays', obj.PathDelays, ...
+          'AveragePathGains', obj.AveragePathGains, ...
+          'KFactor', obj.KFactor, ...
+          'MaximumDopplerShift', obj.MaximumDopplerShift);
+          
+      elseif(obj.ChannelType == 1)
+        obj.MultipathChannel = comm.RayleighChannel(...
+          'SampleRate', obj.SampleRate, ...
+          'PathDelays', obj.PathDelays, ...
+          'AveragePathGains', obj.AveragePathGains, ...
+          'MaximumDopplerShift', obj.MaximumDopplerShift);
+      end
+
+      obj.FrequencyShifter = comm.PhaseFrequencyOffset(...
         'SampleRate', obj.SampleRate);
     end
 
@@ -197,12 +213,9 @@ classdef dlhdlhelperModClassTestChannel < matlab.System
       % Determine clock offset factor
       if(isequal(obj.HardSetOffsetPPM,1)) % if use hardset value
         clockOffset = obj.MaximumClockOffset;
-        disp(['Hardset Clock Offset (PPM): ', num2str(clockOffset)]);
       else
         maxOffset = obj.MaximumClockOffset;
         clockOffset = single(rand() * (maxOffset - 1)) + 1;
-        % disp(['Max Clock Offset (PPM): ', num2str(maxOffset)]);
-        disp(['Random Clock Offset (PPM): ', num2str(clockOffset)]);
       end
 
       obj.C = 1 + clockOffset / 1e6;
@@ -270,11 +283,15 @@ classdef dlhdlhelperModClassTestChannel < matlab.System
       % Calculate maximum timing offset
       maxClockOffset = obj.MaximumClockOffset;
       maxSampleRateOffset = (maxClockOffset / 1e6) * obj.SampleRate;
+      channelType = class(obj.MultipathChannel);
+      maxDopplerShift = obj.MultipathChannel.MaximumDopplerShift;
       
-      s = struct('ChannelDelay', ...
-        mpInfo.ChannelFilterDelay, ...
-        'MaximumFrequencyOffset', maxFreqOffset, ...
-        'MaximumSampleRateOffset', maxSampleRateOffset);
+      % Return channel information
+      s = struct('ChannelType', channelType, ...
+                 'ChannelDelay', mpInfo.ChannelFilterDelay, ...
+                 'MaximumFrequencyOffset', maxFreqOffset, ...
+        'MaximumSampleRateOffset', maxSampleRateOffset, ...
+        'MaximumDopplerShift', maxDopplerShift);
     end
   end
 end

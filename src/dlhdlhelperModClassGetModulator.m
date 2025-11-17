@@ -64,6 +64,7 @@ end
 syms = pskmod(x,2);
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
+% y = upsample(syms, sps);
 end
 
 function y = qpskModulator(x,sps)
@@ -118,6 +119,7 @@ end
 %Original Scheme for APSK Modulation
 syms = dvbsapskmod(x, 16, 's2x');
 % Pulse shape
+% y = upsample(syms, sps);
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
 
@@ -189,7 +191,8 @@ if isempty(filterCoeffs)
   filterCoeffs = rcosdesign(0.35, 4, sps);
 end
 % Modulate and pulse shape
-syms = qammod(x,16,'UnitAveragePower',true);
+% syms = qammod(x,16,'UnitAveragePower',true);
+syms = qammod(x,16,'UnitAveragePower',false);
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
@@ -207,7 +210,8 @@ if isempty(filterCoeffs)
   filterCoeffs = rcosdesign(0.35, 4, sps);
 end
 % Modulate and pulse shape
-syms = qammod(x,32,'UnitAveragePower',true);
+% syms = qammod(x,32,'UnitAveragePower',true);
+syms = qammod(x,32,'UnitAveragePower',false);
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
@@ -225,7 +229,8 @@ if isempty(filterCoeffs)
   filterCoeffs = rcosdesign(0.35, 4, sps);
 end
 % Modulate
-syms = qammod(x,64,'UnitAveragePower',true);
+% syms = qammod(x,64,'UnitAveragePower',true);
+syms = qammod(x,64,'UnitAveragePower',false);
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
@@ -243,7 +248,8 @@ if isempty(filterCoeffs)
   filterCoeffs = rcosdesign(0.35, 4, sps);
 end
 % Modulate
-syms = qammod(x,128,'UnitAveragePower',true);
+% syms = qammod(x,128,'UnitAveragePower',true);
+syms = qammod(x,128,'UnitAveragePower',false);
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
@@ -261,7 +267,8 @@ if isempty(filterCoeffs)
   filterCoeffs = rcosdesign(0.35, 4, sps);
 end
 % Modulate
-syms = qammod(x,256,'UnitAveragePower',true);
+% syms = qammod(x,256,'UnitAveragePower',true);
+syms = qammod(x,256,'UnitAveragePower',false);
 % Pulse shape
 y = filter(filterCoeffs, 1, upsample(syms,sps));
 end
