@@ -1,14 +1,12 @@
 # RadioShift: A Framework Measuring the Robustness of Lightweight Neural Networks over RF Signals
 
-We build an end-to-end framework, named RadioShift, which can (a) automatically generate simulated I/Q frames with various domain shifts, (b) capture real-world I/Q frames, (c) train lightweight neural networks, and (d) test them on FPGAs given the RF signals we collect. The source code of our framework are divided into four separate repositories (as each of them can be used independently).
+We build an end-to-end framework, named RadioShift, which can (a) automatically generate simulated I/Q frames with various domain shifts, (b) capture real-world I/Q frames, (c) train lightweight neural networks, and (c) test them on FPGAs given the RF signals we collect. The source code of our framework are divided into three separate repositories (as each of them can be used independently).
 
-https://github.com/UCdasec/RadioShift
+https://github.com/UCdasec/RadioShift  (Simulated RF Signal Generation)
 
-https://github.com/UCdasec/RadioShift-SDR
+https://github.com/UCdasec/RadioShift-SDR (Real-world RF Signal Generation)
 
-https://github.com/UCdasec/RadioShift-ML
-
-https://github.com/UCdasec/RadioFINN
+https://github.com/UCdasec/RadioFINN  (Train and Test Neural Networks on FPGAs)
 
 ## Overview:
 This repository contains code and documents for generating simulated RF signals with different channel fading,  hardware imperfections, SNRs, etc. by using Matlab. We use it to generate simulated RF signals from different modulations (e.g., FM, BPSK, QPSK, etc.) 
