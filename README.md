@@ -40,9 +40,7 @@ https://ceas.mediaspace.kaltura.com/media/Tutorial_RF_Simulated_Data_Generation_
 https://ceas.mediaspace.kaltura.com/media/Tutorial_RF_Simulated_Data_Generation_Deep_Dive_Part+2/1_a415g8sr
 https://ceas.mediaspace.kaltura.com/media/Tutorial_RF_Simulated_Data_Generation_Deep_Dive_Part+3/1_nqntu9pe
 
-We also provide a tutorial document (ready only) as well. The link is below  
-
-https://www.overleaf.com/read/qgkzqgmshhbc#56783d 
+We also provide a tutorial document as well. 
 
 ## Example Dataset 
 
