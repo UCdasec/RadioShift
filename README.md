@@ -1,5 +1,11 @@
 # RadioShift: How to Generate Simulated RF Signals with Matlab
 
+## Overview:
+This repository contains code and documents for generating simulated RF signals with different channel fading,  hardware imperfections, SNRs, etc. by using Matlab.  
+
+
+## Background
+
 The Matlab code provided in this repositoy is closely derived from the Modulation Classification by Using FPGA
 
 https://www.mathworks.com/help/releases/R2022b/deep-learning-hdl/ug/modulation-classification-by-using-FPGA.html
