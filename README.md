@@ -1,4 +1,11 @@
-# RadioShift: How to Generate Simulated RF Signals with Matlab
+# RadioShift: A Framework Measuring the Robustness of Lightweight Neural Networks over RF Signals
+
+We build an end-to-end framework, named RadioShift, which can (a) automatically generate simulated I/Q frames with various domain shifts, (b) capture real-world I/Q frames, (c) train lightweight neural networks, and (d) test them on FPGAs given the RF signals we collect. The source code of our framework are divided into four separate repositories (as each of them can be used independently).
+
+https://github.com/UCdasec/RadioShift
+https://github.com/UCdasec/RadioShift-SDR
+https://github.com/UCdasec/RadioShift-ML
+https://github.com/UCdasec/RadioFINN
 
 ## Overview:
 This repository contains code and documents for generating simulated RF signals with different channel fading,  hardware imperfections, SNRs, etc. by using Matlab. We use it to generate simulated RF signals from different modulations (e.g., FM, BPSK, QPSK, etc.) 
@@ -9,10 +16,6 @@ We use the source code and documents of this repository to collect simulated RF 
 Anagh Mishra, Phu Le, Ryan Evans, Nirnimesh Ghose, Boyang Wang, "RadioShift: A Framework Measuing the Robustness of Lightweight Neural Networks over RF Signals," the IEEE National Aerospace and Electronics Conference (IEEE NAECON 2026), Cincinnati, OH, August 9-12, 2026, USA.
 
 To completely reproduce research results in the above paper, one will need to use the following four repositories: 
-
-https://github.com/UCdasec/RadioShift 
-https://github.com/UCdasec/RadioShift-SDR
-https://github.com/UCdasec/FINN
 
 ## Background
 
