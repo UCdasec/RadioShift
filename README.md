@@ -16,7 +16,7 @@ We use the source code and documents of this repository to collect simulated RF 
 
 Anagh Mishra, Phu Le, Ryan Evans, Nirnimesh Ghose, Boyang Wang, "RadioShift: A Framework Measuing the Robustness of Lightweight Neural Networks over RF Signals," the IEEE National Aerospace and Electronics Conference (IEEE NAECON 2026), Cincinnati, OH, August 9-12, 2026, USA.
 
-To completely reproduce research results in the above paper, one will need to use the following four repositories: 
+To completely reproduce research results in the above paper, one will need to use all the three repos mentioned above.  
 
 ## Background
 
