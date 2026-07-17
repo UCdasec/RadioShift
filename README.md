@@ -6,7 +6,7 @@ https://github.com/UCdasec/RadioShift  (Simulated RF Signal Generation)
 
 https://github.com/UCdasec/RadioShift-SDR (Real-world RF Signal Generation)
 
-https://github.com/UCdasec/Radio-ML  (Train Neural Networks on GPUs and Test Them on FPGAs)
+https://github.com/UCdasec/RadioShift-ML  (Train Neural Networks on GPUs and Test Them on FPGAs)
 
 ## Overview:
 This repository contains code and documents for generating simulated RF signals with different channel fading,  hardware imperfections, SNRs, etc. by using Matlab. We use it to generate simulated RF signals from different modulations (e.g., FM, BPSK, QPSK, etc.) 
